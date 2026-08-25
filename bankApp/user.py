@@ -64,4 +64,4 @@ class Customer(User):
 
     @property
     def role(self) -> Role:
-            return Role.CUSTOMER
+        return Role.CUSTOMER
