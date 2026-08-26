@@ -1,21 +1,20 @@
 from fastapi import Depends
+from pymongo.database import Database
 
+from app.database import get_database
 from app.repositories.account_repository import AccountRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.services.account_service import AccountService
 from app.services.customer_service import CustomerService
 from app.services.transaction_service import TransactionService
 
-_customer_repo = CustomerRepository()
-_account_repo = AccountRepository()
+
+def get_customer_repository(database: Database = Depends(get_database)) -> CustomerRepository:
+    return CustomerRepository(database)
 
 
-def get_customer_repository() -> CustomerRepository:
-    return _customer_repo
-
-
-def get_account_repository() -> AccountRepository:
-    return _account_repo
+def get_account_repository(database: Database = Depends(get_database)) -> AccountRepository:
+    return AccountRepository(database)
 
 
 def get_customer_service(

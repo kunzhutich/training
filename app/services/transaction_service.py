@@ -27,4 +27,7 @@ class TransactionService:
         to_account.deposit(amount)
         to_account.relabel_last_as_transfer(TransactionType.TRANSFER_IN, from_account.account_number)
 
+        self._account_repo.update(from_account)
+        self._account_repo.update(to_account)
+
         return from_account, to_account

@@ -40,9 +40,14 @@ class CustomerService:
             customer.full_name = full_name
         if branch_code is not None:
             customer.branch_code = branch_code
+        self._customer_repo.update(customer)
         return customer
 
     def deactivate_customer(self, customer_id: str) -> Customer:
         customer = self.get_customer(customer_id)
         customer.is_active = False
+        self._customer_repo.update(customer)
         return customer
+
+    def save(self, customer: Customer) -> None:
+        self._customer_repo.update(customer)

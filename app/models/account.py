@@ -8,11 +8,8 @@ from app.models.transaction import Transaction
 
 
 class Account(ABC):
-    _next_account_number = 1001
-
-    def __init__(self, owner_id: str, opening_balance: Decimal = Decimal("0.00")):
-        self._account_number = f"ACC{Account._next_account_number}"
-        Account._next_account_number += 1
+    def __init__(self, account_number: str, owner_id: str, opening_balance: Decimal = Decimal("0.00")):
+        self._account_number = account_number
         self._owner_id = owner_id
         self._balance = Decimal("0.00")
         self._transactions: List[Transaction] = []

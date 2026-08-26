@@ -14,13 +14,15 @@ class AccountService:
 
     def open_account(self, customer_id: str, account_type: AccountType, opening_balance: Decimal) -> Account:
         customer = self._customer_service.get_customer(customer_id)
+        account_number = self._account_repo.next_account_number()
 
         account: Account
         if account_type == AccountType.SAVINGS:
-            account = SavingsAccount(customer.id, opening_balance)
+            account = SavingsAccount(account_number, customer.id, opening_balance)
         else:
-            account = CheckingAccount(customer.id, opening_balance)
+            account = CheckingAccount(account_number, customer.id, opening_balance)
 
         self._account_repo.add(account)
         customer.link_account(account.account_number)
+        self._customer_service.save(customer)
         return account
