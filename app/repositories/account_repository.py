@@ -42,6 +42,9 @@ class AccountRepository:
         doc = self._collection.find_one({"_id": account_number})
         return self._to_account(doc) if doc else None
 
+    def delete(self, account_number: str) -> None:
+        self._collection.delete_one({"_id": account_number})
+
     def list_all(self) -> List[Account]:
         return [self._to_account(doc) for doc in self._collection.find()]
 

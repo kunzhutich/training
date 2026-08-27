@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class Role(str, Enum):
+    ADMIN = "ADMIN"
+    CUSTOMER = "CUSTOMER"
+
+
 class AccountType(str, Enum):
     SAVINGS = "SAVINGS"
     CHECKING = "CHECKING"

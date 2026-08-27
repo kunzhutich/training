@@ -14,3 +14,6 @@ class Customer:
 
     def link_account(self, account_number: str) -> None:
         self.account_numbers.append(account_number)
+
+    def unlink_account(self, account_number: str) -> None:
+        self.account_numbers.remove(account_number)

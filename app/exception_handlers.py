@@ -2,9 +2,14 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from app.models.exceptions import (
+    AccountNotEmptyError,
     AccountNotFoundError,
+    AuthenticationError,
+    AuthorizationError,
     BankError,
+    BranchNotFoundError,
     CustomerNotFoundError,
+    DuplicateBranchCodeError,
     DuplicateUsernameError,
     InsufficientFundsError,
     InvalidAmountError,
@@ -13,9 +18,14 @@ from app.models.exceptions import (
 _STATUS_BY_EXCEPTION = (
     (CustomerNotFoundError, status.HTTP_404_NOT_FOUND),
     (AccountNotFoundError, status.HTTP_404_NOT_FOUND),
+    (BranchNotFoundError, status.HTTP_404_NOT_FOUND),
     (DuplicateUsernameError, status.HTTP_409_CONFLICT),
+    (DuplicateBranchCodeError, status.HTTP_409_CONFLICT),
+    (AuthenticationError, status.HTTP_401_UNAUTHORIZED),
+    (AuthorizationError, status.HTTP_403_FORBIDDEN),
     (InvalidAmountError, status.HTTP_400_BAD_REQUEST),
     (InsufficientFundsError, status.HTTP_400_BAD_REQUEST),
+    (AccountNotEmptyError, status.HTTP_400_BAD_REQUEST),
     (BankError, status.HTTP_400_BAD_REQUEST),
 )
 

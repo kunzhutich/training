@@ -16,3 +16,12 @@ class AccountResponse(BaseModel):
     owner_id: str
     account_type: AccountType
     balance: Decimal
+
+
+class AmountRequest(BaseModel):
+    amount: Decimal = Field(gt=0)
+
+
+class CloseAccountResponse(BaseModel):
+    account_number: str
+    payout: Decimal

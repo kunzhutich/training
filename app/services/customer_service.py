@@ -2,16 +2,23 @@ from typing import List
 from uuid import uuid4
 
 from app.models.customer import Customer
-from app.models.exceptions import CustomerNotFoundError, DuplicateUsernameError
+from app.models.exceptions import BranchNotFoundError, CustomerNotFoundError, DuplicateUsernameError
 from app.models.security import hash_password
+from app.repositories.branch_repository import BranchRepository
 from app.repositories.customer_repository import CustomerRepository
 
 
 class CustomerService:
-    def __init__(self, customer_repo: CustomerRepository) -> None:
+    def __init__(self, customer_repo: CustomerRepository, branch_repo: BranchRepository) -> None:
         self._customer_repo = customer_repo
+        self._branch_repo = branch_repo
+
+    def _require_branch(self, branch_code: str) -> None:
+        if self._branch_repo.get(branch_code) is None:
+            raise BranchNotFoundError(f"No branch with code {branch_code}.")
 
     def create_customer(self, username: str, password: str, full_name: str, branch_code: str) -> Customer:
+        self._require_branch(branch_code)
         if self._customer_repo.get_by_username(username) is not None:
             raise DuplicateUsernameError(f"Username '{username}' is already taken.")
 
@@ -39,6 +46,7 @@ class CustomerService:
         if full_name is not None:
             customer.full_name = full_name
         if branch_code is not None:
+            self._require_branch(branch_code)
             customer.branch_code = branch_code
         self._customer_repo.update(customer)
         return customer
@@ -46,6 +54,12 @@ class CustomerService:
     def deactivate_customer(self, customer_id: str) -> Customer:
         customer = self.get_customer(customer_id)
         customer.is_active = False
+        self._customer_repo.update(customer)
+        return customer
+
+    def reactivate_customer(self, customer_id: str) -> Customer:
+        customer = self.get_customer(customer_id)
+        customer.is_active = True
         self._customer_repo.update(customer)
         return customer
 

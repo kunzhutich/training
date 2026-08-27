@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from app.models.enums import AccountType, TransactionType
-from app.models.exceptions import InsufficientFundsError, InvalidAmountError
+from app.models.exceptions import AccountNotEmptyError, InsufficientFundsError, InvalidAmountError
 from app.models.transaction import Transaction
 
 
@@ -65,6 +65,25 @@ class Account(ABC):
             last = self._transactions[-1]
             last.transaction_type = transaction_type
             last.related_account = counterpart_account
+
+    def close_out(self) -> Decimal:
+        """Empty the account for closure and return the payout amount.
+
+        This deliberately bypasses subclass withdrawal rules (minimum
+        balance, overdraft limit) - those exist to keep an account usable
+        for continued banking, not to block the terminal act of closing it.
+        A negative balance (money owed to the bank) still blocks closure.
+        """
+        if self._balance < 0:
+            raise AccountNotEmptyError(
+                f"Cannot close {self._account_number}: outstanding overdraft balance of "
+                f"${-self._balance:.2f} must be repaid first."
+            )
+        payout = self._balance
+        if payout > 0:
+            self._balance = Decimal("0.00")
+            self._record(TransactionType.WITHDRAWAL, payout)
+        return payout
 
 
 class SavingsAccount(Account):

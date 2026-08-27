@@ -21,3 +21,23 @@ class CustomerNotFoundError(BankError):
 
 class DuplicateUsernameError(BankError):
     """Raised when a username is already registered."""
+
+
+class AuthenticationError(BankError):
+    """Raised when login credentials, or a bearer token, are invalid."""
+
+
+class AuthorizationError(BankError):
+    """Raised when an authenticated principal lacks access to a resource."""
+
+
+class BranchNotFoundError(BankError):
+    """Raised when a branch code does not exist at this bank."""
+
+
+class DuplicateBranchCodeError(BankError):
+    """Raised when a branch code is already registered."""
+
+
+class AccountNotEmptyError(BankError):
+    """Raised when closing an account that has a negative (overdrawn) balance."""
