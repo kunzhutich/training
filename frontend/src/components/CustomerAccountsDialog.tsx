@@ -85,7 +85,13 @@ export default function CustomerAccountsDialog({ open, customer, onClose }: Prop
         ) : (
           <List disablePadding>
             {accounts.map((acc) => (
-              <AccountListItem key={acc.account_number} account={acc} onChanged={loadAccounts} />
+              <AccountListItem
+                key={acc.account_number}
+                account={acc}
+                onChanged={loadAccounts}
+                accountHolderName={customer?.full_name}
+                branchCode={customer?.branch_code}
+              />
             ))}
           </List>
         )}

@@ -2,20 +2,20 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth import Principal, get_current_principal, require_admin, require_self_or_admin
 from app.dependencies import get_account_service
-from app.schemas.account import AccountCreateRequest, AccountResponse, AmountRequest, CloseAccountResponse
+from app.mappers import account_to_response as _to_response
+from app.schemas.account import (
+    AccountCreateRequest,
+    AccountResponse,
+    AmountRequest,
+    CloseAccountResponse,
+    SetAlertThresholdRequest,
+    SetMinBalanceRequest,
+    SetOverdraftLimitRequest,
+)
 from app.schemas.transaction import TransactionResponse
 from app.services.account_service import AccountService
 
 router = APIRouter(prefix="/api/v1/accounts", tags=["accounts"])
-
-
-def _to_response(account) -> AccountResponse:
-    return AccountResponse(
-        account_number=account.account_number,
-        owner_id=account.owner_id,
-        account_type=account.account_type,
-        balance=account.balance,
-    )
 
 
 @router.post("", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)
@@ -71,6 +71,45 @@ def withdraw(
     account = service.get_account(account_number)
     require_self_or_admin(principal, account.owner_id)
     account = service.withdraw(account_number, payload.amount)
+    return _to_response(account)
+
+
+@router.put("/{account_number}/min-balance", response_model=AccountResponse)
+def set_min_balance(
+    account_number: str,
+    payload: SetMinBalanceRequest,
+    service: AccountService = Depends(get_account_service),
+    principal: Principal = Depends(get_current_principal),
+) -> AccountResponse:
+    account = service.get_account(account_number)
+    require_self_or_admin(principal, account.owner_id)
+    account = service.set_min_balance(account_number, payload.value)
+    return _to_response(account)
+
+
+@router.put("/{account_number}/overdraft-limit", response_model=AccountResponse)
+def set_overdraft_limit(
+    account_number: str,
+    payload: SetOverdraftLimitRequest,
+    service: AccountService = Depends(get_account_service),
+    principal: Principal = Depends(get_current_principal),
+) -> AccountResponse:
+    account = service.get_account(account_number)
+    require_self_or_admin(principal, account.owner_id)
+    account = service.set_overdraft_limit(account_number, payload.value)
+    return _to_response(account)
+
+
+@router.put("/{account_number}/alert-threshold", response_model=AccountResponse)
+def set_alert_threshold(
+    account_number: str,
+    payload: SetAlertThresholdRequest,
+    service: AccountService = Depends(get_account_service),
+    principal: Principal = Depends(get_current_principal),
+) -> AccountResponse:
+    account = service.get_account(account_number)
+    require_self_or_admin(principal, account.owner_id)
+    account = service.set_alert_threshold(account_number, payload.value)
     return _to_response(account)
 
 

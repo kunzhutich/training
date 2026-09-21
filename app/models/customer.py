@@ -11,6 +11,9 @@ class Customer:
     branch_code: str
     is_active: bool = True
     account_numbers: List[str] = field(default_factory=list)
+    email: str = ""
+    phone: str = ""
+    address: str = ""
 
     def link_account(self, account_number: str) -> None:
         self.account_numbers.append(account_number)

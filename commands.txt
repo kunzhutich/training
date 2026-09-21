@@ -1,0 +1,7 @@
+to redeploy BE:
+- bash infra/build.sh
+- terraform plan -out=tfplan
+- terraform apply "tfplan"
+
+to redeploy FE:
+- bash infra/deploy-frontend.sh

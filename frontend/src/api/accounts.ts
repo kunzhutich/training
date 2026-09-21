@@ -13,4 +13,10 @@ export const accountsApi = {
   transactions: (accountNumber: string) =>
     api.get<Transaction[]>(`/api/v1/accounts/${accountNumber}/transactions`),
   close: (accountNumber: string) => api.delete<CloseAccountResult>(`/api/v1/accounts/${accountNumber}`),
+  setMinBalance: (accountNumber: string, value: string) =>
+    api.put<Account>(`/api/v1/accounts/${accountNumber}/min-balance`, { value }),
+  setOverdraftLimit: (accountNumber: string, value: string) =>
+    api.put<Account>(`/api/v1/accounts/${accountNumber}/overdraft-limit`, { value }),
+  setAlertThreshold: (accountNumber: string, value: string | null) =>
+    api.put<Account>(`/api/v1/accounts/${accountNumber}/alert-threshold`, { value }),
 };

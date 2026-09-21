@@ -12,6 +12,16 @@ __pycache__/
 # Environment / secrets
 .env
 
+# Terraform
+infra/build/
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/terraform.tfvars
+infra/*.tfplan
+infra/tfplan*
+infra/secrets.ps1
+
 # Editor
 .vscode/
 .idea/

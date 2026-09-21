@@ -3,7 +3,7 @@ from typing import List
 
 from app.models.account import Account, CheckingAccount, SavingsAccount
 from app.models.enums import AccountType
-from app.models.exceptions import AccountNotFoundError
+from app.models.exceptions import AccountNotFoundError, InvalidAmountError
 from app.models.transaction import Transaction
 from app.repositories.account_repository import AccountRepository
 from app.services.customer_service import CustomerService
@@ -56,6 +56,28 @@ class AccountService:
 
     def get_transactions(self, account_number: str) -> List[Transaction]:
         return self.get_account(account_number).transactions
+
+    def set_min_balance(self, account_number: str, value: Decimal) -> Account:
+        account = self.get_account(account_number)
+        if not isinstance(account, SavingsAccount):
+            raise InvalidAmountError("Minimum balance only applies to savings accounts.")
+        account.set_min_balance(value)
+        self._account_repo.update(account)
+        return account
+
+    def set_overdraft_limit(self, account_number: str, value: Decimal) -> Account:
+        account = self.get_account(account_number)
+        if not isinstance(account, CheckingAccount):
+            raise InvalidAmountError("Overdraft limit only applies to checking accounts.")
+        account.set_overdraft_limit(value)
+        self._account_repo.update(account)
+        return account
+
+    def set_alert_threshold(self, account_number: str, value: Decimal | None) -> Account:
+        account = self.get_account(account_number)
+        account.set_alert_threshold(value)
+        self._account_repo.update(account)
+        return account
 
     def close_account(self, account_number: str) -> Decimal:
         account = self.get_account(account_number)

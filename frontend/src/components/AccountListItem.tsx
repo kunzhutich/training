@@ -1,12 +1,20 @@
 import { useState } from "react";
 import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Collapse from "@mui/material/Collapse";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
 import HistoryIcon from "@mui/icons-material/History";
@@ -14,6 +22,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { accountsApi } from "../api/accounts";
 import { ApiError } from "../api/client";
 import { useNotify } from "../NotificationContext";
+import { fakeRoutingNumber } from "../utils/routingNumber";
 import type { Account } from "../types";
 import AmountDialog from "./AmountDialog";
 import ConfirmDialog from "./ConfirmDialog";
@@ -22,14 +31,20 @@ import TransactionHistoryDialog from "./TransactionHistoryDialog";
 interface Props {
   account: Account;
   onChanged: () => void;
+  accountHolderName?: string;
+  branchCode?: string | null;
 }
 
-export default function AccountListItem({ account, onChanged }: Props) {
+export default function AccountListItem({ account, onChanged, accountHolderName, branchCode }: Props) {
   const notify = useNotify();
+  const [expanded, setExpanded] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+
+  const closeMenu = () => setMenuAnchor(null);
 
   const handleDeposit = async (amount: string) => {
     try {
@@ -64,38 +79,135 @@ export default function AccountListItem({ account, onChanged }: Props) {
 
   return (
     <>
-      <ListItem divider>
-        <AccountBalanceWalletIcon sx={{ mr: 2, color: "primary.main" }} />
-        <ListItemText
-          primary={account.account_number}
-          secondary={<Chip size="small" label={account.account_type} sx={{ mt: 0.5 }} />}
-        />
-        <Typography variant="h6" sx={{ fontWeight: 600, mr: 2 }}>
-          ${Number(account.balance).toFixed(2)}
-        </Typography>
-        <Stack direction="row">
-          <Tooltip title="Deposit">
-            <IconButton size="small" onClick={() => setDepositOpen(true)}>
-              <AddCircleOutlineIcon fontSize="small" />
+      <ListItem
+        divider
+        disablePadding
+        secondaryAction={
+          <Tooltip title="Account actions">
+            <IconButton edge="end" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+              <MoreVertIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Withdraw">
-            <IconButton size="small" onClick={() => setWithdrawOpen(true)}>
-              <RemoveCircleOutlineIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Transaction history">
-            <IconButton size="small" onClick={() => setHistoryOpen(true)}>
-              <HistoryIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Close account">
-            <IconButton size="small" onClick={() => setCloseConfirmOpen(true)}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        }
+      >
+        <ListItemButton onClick={() => setExpanded((v) => !v)} sx={{ pr: 7 }}>
+          <AccountBalanceWalletIcon sx={{ mr: 2, color: "primary.main" }} />
+          <ListItemText
+            primary={account.account_number}
+            secondary={<Chip size="small" label={account.account_type} sx={{ mt: 0.5 }} />}
+          />
+          <Typography variant="h6" sx={{ fontWeight: 600, mr: 1 }}>
+            ${Number(account.balance).toFixed(2)}
+          </Typography>
+          <ExpandMoreIcon
+            sx={{
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+              color: "text.secondary",
+            }}
+          />
+        </ListItemButton>
       </ListItem>
+
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <Box sx={{ px: 3, py: 2, bgcolor: "action.hover" }}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant="caption" color="text.secondary">
+                Account Number
+              </Typography>
+              <Typography variant="body2">{account.account_number}</Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant="caption" color="text.secondary">
+                Routing Number
+              </Typography>
+              <Typography variant="body2">{fakeRoutingNumber(branchCode ?? account.account_number)}</Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant="caption" color="text.secondary">
+                Account Type
+              </Typography>
+              <Typography variant="body2">
+                {account.account_type === "SAVINGS" ? "Savings" : "Checking"}
+              </Typography>
+            </Grid>
+            {accountHolderName && (
+              <Grid size={{ xs: 6, sm: 4 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Account Holder
+                </Typography>
+                <Typography variant="body2">{accountHolderName}</Typography>
+              </Grid>
+            )}
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant="caption" color="text.secondary">
+                Date Opened
+              </Typography>
+              <Typography variant="body2">{new Date(account.opened_at).toLocaleDateString()}</Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant="caption" color="text.secondary">
+                Status
+              </Typography>
+              <Typography variant="body2">Active</Typography>
+            </Grid>
+            <Grid size={12}>
+              <Typography variant="caption" color="text.secondary">
+                Account Rule
+              </Typography>
+              <Typography variant="body2">{account.rule_description}</Typography>
+            </Grid>
+          </Grid>
+        </Box>
+      </Collapse>
+
+      <Menu anchorEl={menuAnchor} open={menuAnchor !== null} onClose={closeMenu}>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setDepositOpen(true);
+          }}
+        >
+          <ListItemIcon>
+            <AddCircleOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          Deposit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setWithdrawOpen(true);
+          }}
+        >
+          <ListItemIcon>
+            <RemoveCircleOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          Withdraw
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setHistoryOpen(true);
+          }}
+        >
+          <ListItemIcon>
+            <HistoryIcon fontSize="small" />
+          </ListItemIcon>
+          Transaction History
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setCloseConfirmOpen(true);
+          }}
+        >
+          <ListItemIcon>
+            <CloseIcon fontSize="small" />
+          </ListItemIcon>
+          Close Account
+        </MenuItem>
+      </Menu>
 
       <AmountDialog
         open={depositOpen}

@@ -29,6 +29,9 @@ export interface Customer {
   branch_code: string;
   is_active: boolean;
   account_numbers: string[];
+  email: string;
+  phone: string;
+  address: string;
 }
 
 export interface Account {
@@ -36,6 +39,11 @@ export interface Account {
   owner_id: string;
   account_type: AccountType;
   balance: string;
+  opened_at: string;
+  rule_description: string;
+  min_balance: string | null;
+  overdraft_limit: string | null;
+  alert_threshold: string | null;
 }
 
 export interface Transaction {
@@ -58,11 +66,17 @@ export interface CreateCustomerPayload {
   password: string;
   full_name: string;
   branch_code: string;
+  email?: string;
+  phone?: string;
+  address?: string;
 }
 
 export interface UpdateCustomerPayload {
   full_name?: string;
   branch_code?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
 }
 
 export interface OpenAccountPayload {

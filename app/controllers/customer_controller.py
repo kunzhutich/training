@@ -2,8 +2,14 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth import Principal, get_current_principal, require_admin, require_self_or_admin
 from app.dependencies import get_account_service, get_customer_service
+from app.mappers import account_to_response
 from app.schemas.account import AccountResponse
-from app.schemas.customer import CustomerCreateRequest, CustomerResponse, CustomerUpdateRequest
+from app.schemas.customer import (
+    CustomerCreateRequest,
+    CustomerResponse,
+    CustomerUpdateRequest,
+    UpdateUsernameRequest,
+)
 from app.services.account_service import AccountService
 from app.services.customer_service import CustomerService
 
@@ -22,6 +28,9 @@ def create_customer(
         password=payload.password,
         full_name=payload.full_name,
         branch_code=payload.branch_code,
+        email=payload.email,
+        phone=payload.phone,
+        address=payload.address,
     )
     return CustomerResponse(**customer.__dict__)
 
@@ -53,7 +62,26 @@ def update_customer(
     principal: Principal = Depends(get_current_principal),
 ) -> CustomerResponse:
     require_self_or_admin(principal, customer_id)
-    customer = service.update_customer(customer_id, payload.full_name, payload.branch_code)
+    customer = service.update_customer(
+        customer_id,
+        payload.full_name,
+        payload.branch_code,
+        payload.email,
+        payload.phone,
+        payload.address,
+    )
+    return CustomerResponse(**customer.__dict__)
+
+
+@router.put("/{customer_id}/username", response_model=CustomerResponse)
+def update_username(
+    customer_id: str,
+    payload: UpdateUsernameRequest,
+    service: CustomerService = Depends(get_customer_service),
+    principal: Principal = Depends(get_current_principal),
+) -> CustomerResponse:
+    require_self_or_admin(principal, customer_id)
+    customer = service.update_username(customer_id, payload.new_username)
     return CustomerResponse(**customer.__dict__)
 
 
@@ -87,12 +115,4 @@ def list_customer_accounts(
 ) -> list[AccountResponse]:
     require_self_or_admin(principal, customer_id)
     accounts = service.list_accounts_for_customer(customer_id)
-    return [
-        AccountResponse(
-            account_number=a.account_number,
-            owner_id=a.owner_id,
-            account_type=a.account_type,
-            balance=a.balance,
-        )
-        for a in accounts
-    ]
+    return [account_to_response(a) for a in accounts]

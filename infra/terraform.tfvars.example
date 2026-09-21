@@ -1,0 +1,8 @@
+aws_region      = "us-east-1"
+project_name    = "bank-app"
+mongodb_db_name = "bank_app"
+
+# Do not put real secrets in a committed tfvars file.
+# Set these as environment variables instead, e.g. in PowerShell:
+#   $env:TF_VAR_mongodb_uri = "mongodb+srv://user:pass@cluster.mongodb.net/?appName=..."
+#   $env:TF_VAR_jwt_secret_key = "<the same value from your local .env>"

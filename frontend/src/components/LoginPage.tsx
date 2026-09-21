@@ -7,6 +7,10 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Link from "@mui/material/Link";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Chip from "@mui/material/Chip";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import { useAuth } from "../AuthContext";
 import { ApiError } from "../api/client";
@@ -15,6 +19,20 @@ import { useNotify } from "../NotificationContext";
 interface Props {
   onSwitchToSignUp: () => void;
 }
+
+interface DemoAccount {
+  role: "Admin" | "Customer";
+  username: string;
+  password: string;
+  blurb: string;
+}
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  { role: "Admin", username: "admin", password: "admin123", blurb: "Manager dashboard, all customers & branches" },
+  { role: "Customer", username: "alice", password: "alice123", blurb: "Savings + checking, healthy balances" },
+  { role: "Customer", username: "bob", password: "bob123", blurb: "Checking account currently overdrawn" },
+  { role: "Customer", username: "carol", password: "carol123", blurb: "Savings account with a triggered low-balance alert" },
+];
 
 export default function LoginPage({ onSwitchToSignUp }: Props) {
   const { login } = useAuth();
@@ -41,9 +59,12 @@ export default function LoginPage({ onSwitchToSignUp }: Props) {
       sx={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         bgcolor: "primary.main",
+        py: 4,
+        gap: 3,
       }}
     >
       <Paper elevation={6} sx={{ p: 4, width: 360 }}>
@@ -92,6 +113,47 @@ export default function LoginPage({ onSwitchToSignUp }: Props) {
             Create an account
           </Link>
         </Typography>
+      </Paper>
+
+      <Paper elevation={6} sx={{ p: 3, width: 360 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+          Demo Accounts
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Click one to fill in the form above, then Sign In.
+        </Typography>
+        <List dense disablePadding sx={{ mt: 1 }}>
+          {DEMO_ACCOUNTS.map((demo) => (
+            <ListItemButton
+              key={demo.username}
+              onClick={() => {
+                setUsername(demo.username);
+                setPassword(demo.password);
+              }}
+              sx={{ borderRadius: 1, mb: 0.5 }}
+            >
+              <ListItemText
+                primary={
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {demo.username}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      / {demo.password}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label={demo.role}
+                      color={demo.role === "Admin" ? "secondary" : "default"}
+                      sx={{ ml: "auto" }}
+                    />
+                  </Stack>
+                }
+                secondary={demo.blurb}
+              />
+            </ListItemButton>
+          ))}
+        </List>
       </Paper>
     </Box>
   );

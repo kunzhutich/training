@@ -18,9 +18,12 @@ import CustomersPage from "./components/CustomersPage";
 import AllAccountsPage from "./components/AllAccountsPage";
 import BranchesPage from "./components/BranchesPage";
 import TransferPage from "./components/TransferPage";
-import CustomerHome from "./components/CustomerHome";
+import CustomerDashboardPage from "./components/CustomerDashboardPage";
+import StatementsPage from "./components/StatementsPage";
+import ProfilePage from "./components/ProfilePage";
 
 type AdminTabKey = "dashboard" | "customers" | "accounts" | "branches" | "transfer";
+type CustomerTabKey = "dashboard" | "statements" | "profile";
 
 function TopBar({ children }: { children?: ReactNode }) {
   const { user, logout } = useAuth();
@@ -79,11 +82,39 @@ function AdminDashboard() {
 }
 
 function CustomerDashboard() {
+  const [tab, setTab] = useState<CustomerTabKey>("dashboard");
+  const [statementsAccount, setStatementsAccount] = useState<string | null>(null);
+
+  const pages: Record<CustomerTabKey, ReactNode> = {
+    dashboard: (
+      <CustomerDashboardPage
+        onViewStatements={(accountNumber) => {
+          setStatementsAccount(accountNumber);
+          setTab("statements");
+        }}
+      />
+    ),
+    statements: <StatementsPage initialAccountNumber={statementsAccount} />,
+    profile: <ProfilePage />,
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <TopBar />
+      <TopBar>
+        <Tabs
+          value={tab}
+          onChange={(_, value: CustomerTabKey) => setTab(value)}
+          textColor="inherit"
+          indicatorColor="secondary"
+        >
+          <Tab label="Dashboard" value="dashboard" />
+          <Tab label="Statements" value="statements" />
+          <Tab label="Profile" value="profile" />
+        </Tabs>
+      </TopBar>
+
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <CustomerHome />
+        {pages[tab]}
       </Container>
     </Box>
   );

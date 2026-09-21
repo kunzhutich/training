@@ -17,7 +17,16 @@ class CustomerService:
         if self._branch_repo.get(branch_code) is None:
             raise BranchNotFoundError(f"No branch with code {branch_code}.")
 
-    def create_customer(self, username: str, password: str, full_name: str, branch_code: str) -> Customer:
+    def create_customer(
+        self,
+        username: str,
+        password: str,
+        full_name: str,
+        branch_code: str,
+        email: str = "",
+        phone: str = "",
+        address: str = "",
+    ) -> Customer:
         self._require_branch(branch_code)
         if self._customer_repo.get_by_username(username) is not None:
             raise DuplicateUsernameError(f"Username '{username}' is already taken.")
@@ -28,6 +37,9 @@ class CustomerService:
             password_hash=hash_password(password),
             full_name=full_name,
             branch_code=branch_code,
+            email=email,
+            phone=phone,
+            address=address,
         )
         self._customer_repo.add(customer)
         return customer
@@ -41,13 +53,36 @@ class CustomerService:
             raise CustomerNotFoundError(f"No customer with id {customer_id}.")
         return customer
 
-    def update_customer(self, customer_id: str, full_name: str | None, branch_code: str | None) -> Customer:
+    def update_customer(
+        self,
+        customer_id: str,
+        full_name: str | None,
+        branch_code: str | None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: str | None = None,
+    ) -> Customer:
         customer = self.get_customer(customer_id)
         if full_name is not None:
             customer.full_name = full_name
         if branch_code is not None:
             self._require_branch(branch_code)
             customer.branch_code = branch_code
+        if email is not None:
+            customer.email = email
+        if phone is not None:
+            customer.phone = phone
+        if address is not None:
+            customer.address = address
+        self._customer_repo.update(customer)
+        return customer
+
+    def update_username(self, customer_id: str, new_username: str) -> Customer:
+        customer = self.get_customer(customer_id)
+        existing = self._customer_repo.get_by_username(new_username)
+        if existing is not None and existing.id != customer_id:
+            raise DuplicateUsernameError(f"Username '{new_username}' is already taken.")
+        customer.username = new_username
         self._customer_repo.update(customer)
         return customer
 

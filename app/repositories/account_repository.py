@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
@@ -55,6 +56,18 @@ class AccountRepository:
             "owner_id": account.owner_id,
             "account_type": account.account_type.value,
             "balance": str(account.balance),
+            "opened_at": account.opened_at,
+            "alert_threshold": str(account.alert_threshold) if account.alert_threshold is not None else None,
+            "custom_min_balance": (
+                str(account._custom_min_balance)
+                if isinstance(account, SavingsAccount) and account._custom_min_balance is not None
+                else None
+            ),
+            "custom_overdraft_limit": (
+                str(account._custom_overdraft_limit)
+                if isinstance(account, CheckingAccount) and account._custom_overdraft_limit is not None
+                else None
+            ),
             "transactions": [
                 {
                     "transaction_id": t.transaction_id,
@@ -81,6 +94,15 @@ class AccountRepository:
         account._account_number = doc["_id"]
         account._owner_id = doc["owner_id"]
         account._balance = Decimal(doc["balance"])
+        account._opened_at = doc.get("opened_at", datetime.now())
+        alert_threshold = doc.get("alert_threshold")
+        account._alert_threshold = Decimal(alert_threshold) if alert_threshold is not None else None
+        if account_cls is SavingsAccount:
+            custom_min = doc.get("custom_min_balance")
+            account._custom_min_balance = Decimal(custom_min) if custom_min is not None else None
+        else:
+            custom_overdraft = doc.get("custom_overdraft_limit")
+            account._custom_overdraft_limit = Decimal(custom_overdraft) if custom_overdraft is not None else None
         account._transactions = [
             Transaction(
                 transaction_id=t["transaction_id"],
